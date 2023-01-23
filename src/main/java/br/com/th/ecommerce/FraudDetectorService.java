@@ -1,16 +1,14 @@
 package br.com.th.ecommerce;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-
-import java.util.Properties;
 
 public class FraudDetectorService {
     public static void main(String[] args) throws InterruptedException {
         var fraudDetectorService = new FraudDetectorService();
-        var kafkaService = new KafkaService(FraudDetectorService.class.getSimpleName(),"ECOMMERCE_NEW_ORDER", fraudDetectorService::parse);
-        kafkaService.run();
-
+        try(var kafkaService = new KafkaService(FraudDetectorService.class.getSimpleName(),
+                "ECOMMERCE_NEW_ORDER", fraudDetectorService::parse)){
+            kafkaService.run();
+        }
     }
 
     private void parse(ConsumerRecord<String, String> order) throws InterruptedException {
