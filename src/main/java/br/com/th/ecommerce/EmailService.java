@@ -1,37 +1,24 @@
 package br.com.th.ecommerce;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Properties;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class EmailService {
     public static void main(String[] args) throws InterruptedException {
-        var consumer = new KafkaConsumer<String, String>(properties());
-        consumer.subscribe(Collections.singletonList("ECOMMERCE_SEND_EMAIL"));
-        while (true){
-            var records = consumer.poll(Duration.ofMillis(100));
-            if (!records.isEmpty()){
-                records.forEach(order -> System.out.println("Send email!"
-                        +" \nkey: " + order.key() + "\n"
-                        +"value: " + order.value()));
-                Thread.sleep(1000);
+        var emailService = new EmailService();
+        var kafkaservice = new KafkaService(EmailService.class.getSimpleName(),
+                            "ECOMMERCE_SEND_EMAIL", emailService::parse);
 
-                System.out.println("Email sent");
-            }
-
-        }
+        kafkaservice.run();
     }
 
-    private static Properties properties() {
-        var properties = new Properties();
-        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, EmailService.class.getSimpleName());
-        return properties;
+    private void parse(ConsumerRecord<String, String> order) throws InterruptedException {
+
+         System.out.println("Send email!"
+                +" \nkey: " + order.key() + "\n"
+                +"value: " + order.value());
+         Thread.sleep(1000);
+
+        System.out.println("Email sent");
     }
+
 }
